@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 
 public class SpawnManager : MonoBehaviour
 {
@@ -9,11 +11,17 @@ public class SpawnManager : MonoBehaviour
     // where to spawn
     [SerializeField] private Transform spawnOrigin;
 
+    [SerializeField] private Transform obstaclesParent;
+
     // rate of spawning
     [SerializeField] private float spawnInterval;
 
+    [SerializeField] private float spawnOffset;
+
     // speed of obstacles
     [SerializeField] private float obstacleSpeed;
+
+    [SerializeField] private float leftmostEdge;
 
     private float timer;
 
@@ -23,6 +31,8 @@ public class SpawnManager : MonoBehaviour
     {
         timer = spawnInterval;
 
+        SpawnObstacle();
+
     }
 
     // Update is called once per frame
@@ -31,11 +41,30 @@ public class SpawnManager : MonoBehaviour
         if (ShouldSpawnObstacle())
         {
             Debug.Log("timer ended. please spawn an obstacle.");
-            // SpawnObstacle();
+            SpawnObstacle();
         }
 
         MoveObstacles();
 
+        DestroyObstacles();
+
+    }
+
+    private void DestroyObstacles()
+    {
+        foreach(Transform obstacle in obstaclesParent)
+        {
+            if(obstacle.position.x <= leftmostEdge)
+            {
+                Destroy(obstacle.gameObject);
+            }
+        }
+    }
+
+    private void SpawnObstacle()
+    {
+        Vector2 randPos = spawnOrigin.position + new Vector3(0, UnityEngine.Random.Range(-spawnOffset, spawnOffset), 0);
+        Instantiate(obstaclePrefab, randPos, spawnOrigin.rotation, obstaclesParent);
     }
 
     private bool ShouldSpawnObstacle()
@@ -53,6 +82,9 @@ public class SpawnManager : MonoBehaviour
 
     private void MoveObstacles()
     {
-        // movement code
+        foreach( Transform child in obstaclesParent)
+        {
+            child.position += Vector3.left * Time.deltaTime * obstacleSpeed;
+        }
     }
 }
